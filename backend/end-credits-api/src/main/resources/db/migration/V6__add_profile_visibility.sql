@@ -1,0 +1,2 @@
+ALTER TABLE users
+    ADD COLUMN profile_public BOOLEAN NOT NULL DEFAULT FALSE;

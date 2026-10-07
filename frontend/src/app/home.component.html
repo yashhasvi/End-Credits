@@ -1,0 +1,88 @@
+<main class="for-you-page">
+  <app-home-navigation [user]="user" (signOut)="signOut.emit()"></app-home-navigation>
+
+  <section class="landing-cinema" aria-labelledby="landing-title">
+    <div class="landing-frame" aria-hidden="true">
+      <i class="corner top-left"></i><i class="corner top-right"></i>
+      <i class="corner bottom-left"></i><i class="corner bottom-right"></i>
+      <span class="frame-label label-top">FRAME 001 / PRIVATE CINEMA</span>
+      <span class="frame-label label-bottom">35MM · 01:00:00:00 · END CREDITS</span>
+    </div>
+    <div class="landing-dust" aria-hidden="true"><i></i><i></i><i></i></div>
+
+    <div class="landing-copy">
+      <p>YOUR CINEMA / {{ user.username.toUpperCase() }}</p>
+      <h1 id="landing-title"><span>WHAT STAYS</span><span>AFTER THE</span><span>CREDITS??</span></h1>
+      <span class="landing-note">A private cinema for the films that keep returning.</span>
+      <div class="landing-meta" aria-label="Cinematic frame details"><span>35MM</span><span>FRAME / 001</span><span>TAKE / ONE</span></div>
+    </div>
+
+    <aside class="landing-vibe" aria-label="Choose your cinema vibe">
+      <app-vibe-table
+        kicker="SELECT YOUR VIBE / 35MM"
+        title="CHOOSE YOUR VIBE."
+        [movies]="vibeFilms()"
+        (vibeSelected)="chooseVibe($event)"
+        (movieSelected)="openFilm($event)"
+      ></app-vibe-table>
+      <p class="vibe-source">CURRENT SIGNAL / {{ activeVibe() }} · {{ vibeNote() }}</p>
+    </aside>
+  </section>
+
+  @if (watchingFilm(); as film) {
+    <section
+      class="tonight-screening"
+      [style.background-image]="screeningImageUrl(film) ? 'url(' + screeningImageUrl(film) + ')' : null"
+      aria-labelledby="tonight-title"
+    >
+      <div class="screen-wash"></div>
+      <article>
+        <p>02 / CURRENTLY WATCHING</p>
+        <h2 id="tonight-title">TONIGHT'S<br>SCREENING</h2>
+        <h3>{{ titleFor(film) }}</h3>
+        <span>{{ yearFor(film) }} @if (film.runtime) { / {{ film.runtime }} MIN } @if (film.genres.length) { / {{ genresFor(film) }} }</span>
+        @if (film.overview) { <p class="overview">{{ film.overview }}</p> }
+        <button type="button" (click)="openFilm(film)">CONTINUE FILM ↗</button>
+      </article>
+    </section>
+  } @else {
+    <section class="tonight-empty" aria-labelledby="tonight-title">
+      <p>02 / TONIGHT'S SCREENING</p>
+      <h2 id="tonight-title">NOTHING IS<br>PLAYING YET.</h2>
+      <span>Choose a film, save it as Watching, and this screen will become yours.</span>
+      <a routerLink="/discover">FIND TONIGHT'S FILM ↗</a>
+    </section>
+  }
+
+  <section class="outside-scene" aria-labelledby="outside-title">
+    <header class="outside-copy">
+      <p>03 / EXPLORE BEYOND THE FAMILIAR</p>
+      <h2 id="outside-title">OUTSIDE<br>YOUR USUAL<br>FRAME.</h2>
+      <span>Real cinema from other original-language reels. No prediction—only an invitation to look wider.</span>
+    </header>
+    <div class="world-frame">
+      <span class="frame-label top">CINEMA WITHOUT BORDERS</span>
+      <div class="world-films">
+        @for (film of outsideFilms(); track film.tmdbId) {
+          <button type="button" class="world-film" (click)="openFilm(film)" [attr.aria-label]="'Open ' + titleFor(film)">
+            @if (posterUrl(film)) { <img [src]="posterUrl(film)!" [alt]="'Poster for ' + titleFor(film)" loading="lazy"> }
+            @else { <span class="world-fallback">WORLD<br>CINEMA</span> }
+            <span>{{ titleFor(film) }}</span>
+          </button>
+        } @empty {
+          @if (outsideLoadFailed()) {
+            <p>THE WORLD REEL IS TEMPORARILY UNAVAILABLE.</p>
+          } @else {
+            <p>OPENING THE WORLD REEL…</p>
+          }
+        }
+      </div>
+      <span class="frame-label bottom">STEP OUTSIDE THE FRAME →</span>
+    </div>
+  </section>
+
+  <footer class="home-ending">
+    <p>THE WORLD HAS MORE FILMS<br>THAN ONE LIFETIME CAN HOLD.</p>
+    <a routerLink="/discover">DISCOVER WHAT'S NEXT ↗</a>
+  </footer>
+</main>

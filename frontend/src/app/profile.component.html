@@ -1,0 +1,155 @@
+<main class="profile-publication" id="profile" aria-labelledby="profile-title">
+  <section class="profile-cover">
+    <div class="cover-rule" aria-hidden="true"></div>
+    <header class="profile-masthead">
+      <p>END CREDITS / PERSONAL CINEMA</p>
+      <span>FRAME 001 / {{ profilePublic() ? 'PUBLIC EDITION' : 'PRIVATE EDITION' }}</span>
+    </header>
+
+    <div class="cover-composition">
+      <div class="cover-copy">
+        <p class="eyebrow">{{ user.username.toUpperCase() }}'S CINEMA</p>
+        <h1 id="profile-title">FILMS THAT<br><em>MADE ME,</em><br>ME.</h1>
+        <p class="cover-summary">A living archive of the films that have stayed.</p>
+      </div>
+      <div class="cover-filmstrip" aria-label="A selection of films from this cinema">
+        @for (movie of heroFilms(); track movie.tmdbId; let index = $index) {
+          <button type="button" [class]="'cover-film cover-film-' + index" style="border:0;padding:0;text-align:inherit;color:inherit" (click)="openMovie(movie)" [attr.aria-label]="'Open ' + movie.title">
+            <span>0{{ index + 1 }} / 35MM</span>
+            @if (posterUrl(movie)) { <img [src]="posterUrl(movie)!" [alt]="'Poster for ' + movie.title" /> }
+            @else { <div class="no-poster">NO<br>POSTER</div> }
+          </button>
+        }
+        @if (!heroFilms().length) { <p class="cover-empty">YOUR CINEMA<br>IS TAKING SHAPE.</p> }
+      </div>
+    </div>
+
+    <div class="cover-foot cover-foot-refined">
+      <p class="cinema-name">{{ user.username.toUpperCase() }}</p>
+      <p class="profile-stat-line">{{ watched().length < 10 ? '0' : '' }}{{ watched().length }} WATCHED <span>/</span> {{ watching().length < 10 ? '0' : '' }}{{ watching().length }} NOW PLAYING <span>/</span> {{ watchlist().length < 10 ? '0' : '' }}{{ watchlist().length }} WATCHLIST</p>
+    </div>
+  </section>
+
+  @if (sharePanelOpen()) {
+    <div class="share-overlay" (click)="closeSharePanel()">
+      <aside class="share-panel" role="dialog" aria-modal="true" aria-labelledby="share-panel-title" (click)="$event.stopPropagation()">
+        <button class="share-dismiss" type="button" (click)="closeSharePanel()" aria-label="Close sharing controls">×</button>
+        <p>YOUR CINEMA / SHARING</p>
+        <h2 id="share-panel-title">SHARE<br>YOUR <em>FRAME.</em></h2>
+        <section class="visibility-sheet">
+          <div>
+            <strong>PROFILE VISIBILITY</strong>
+            <small>{{ profilePublic() ? 'Anyone with the link can enter.' : 'Only you can enter this edition.' }}</small>
+          </div>
+          <button class="switch" type="button" [attr.aria-pressed]="profilePublic()" [attr.aria-label]="profilePublic() ? 'Make profile private' : 'Make profile public'" (click)="toggleProfileVisibility()" [disabled]="isUpdatingVisibility()"><span></span></button>
+        </section>
+        <p class="visibility-state">{{ profilePublic() ? 'PUBLIC PROFILE' : 'PRIVATE PROFILE' }}</p>
+        <div class="share-actions">
+          <button type="button" (click)="copyProfileLink()" [disabled]="!profilePublic()">COPY LINK</button>
+          <button class="primary-action" type="button" (click)="shareProfile()" [disabled]="!profilePublic()">SHARE PROFILE ↗</button>
+        </div>
+        @if (!profilePublic()) { <p class="share-note">Set the toggle to Public before a link can be copied or shared.</p> }
+      </aside>
+    </div>
+  }
+
+  <section class="chapter my-five-chapter" aria-labelledby="my-five-title">
+    <header class="chapter-header my-five-header">
+      <p>ROLL / 01 — CINEMA IDENTITY</p>
+      <div><h2 id="my-five-title">MY FIVE</h2><span>THE FIVE FILMS<br>THAT STAYED.</span></div>
+      <button class="chapter-action" type="button" (click)="openMyFiveEditor()">EDIT MY FIVE ↗</button>
+    </header>
+    @if (myFive()?.length) {
+      <div class="my-five-loading" aria-hidden="true"><span>ROLL 01</span><i></i><small>FILM LOADING / FIVE FRAMES</small></div>
+      <div class="my-five-reel" aria-label="The five films that define {{ user.username }}'s cinema">
+        <div class="reel-track">
+          @for (movie of myFive(); track movie.tmdbId; let index = $index) {
+            <button type="button" class="reel-frame" [style.--order]="index" (click)="openMovie(movie)" [attr.aria-label]="'Open ' + movie.title">
+              <span class="film-index">FRAME / 0{{ index + 1 }}</span>
+              <div class="poster-shell">
+                @if (posterUrl(movie)) { <img [src]="posterUrl(movie)!" [alt]="'Poster for ' + movie.title" loading="lazy" /> }
+                @else { <div class="no-poster">NO<br>POSTER</div> }
+              </div>
+              <div class="my-five-caption">
+                <h3>{{ movie.title }}</h3>
+                <p>{{ releaseYear(movie) }}</p>
+                @if (movie.rating) { <span class="film-rating">RATED / {{ movie.rating }} OF 10</span> }
+              </div>
+            </button>
+          }
+        </div>
+        <p class="reel-scroll-hint">01—05 <span>DRAG / SCROLL →</span></p>
+      </div>
+    } @else {
+      <p class="chapter-empty"><strong>Your five are still waiting.</strong> Choose up to five saved films that represent your cinema identity.</p>
+    }
+    @if (editingMyFive()) {
+      <div class="my-five-picker">
+        <header><p>SELECT UP TO FIVE / {{ myFiveSelection().length }} OF 5</p><button type="button" (click)="openMyFiveEditor()">CLOSE</button></header>
+        @if (!(movies()?.length)) { <p class="chapter-empty">Save a film from Discover before choosing your five.</p> }
+        @else {
+          <div class="my-five-options">@for (movie of movies()!; track movie.tmdbId) { <button type="button" [class.is-selected]="isMyFiveSelected(movie.tmdbId)" (click)="toggleMyFive(movie.tmdbId)" [disabled]="!isMyFiveSelected(movie.tmdbId) && myFiveSelection().length === 5"><span>{{ isMyFiveSelected(movie.tmdbId) ? 'SELECTED' : 'ADD FILM' }}</span>{{ movie.title }}</button> }</div>
+          <button class="primary-action" type="button" (click)="saveMyFive()" [disabled]="isSavingMyFive()">{{ isSavingMyFive() ? 'SAVING…' : 'SAVE MY FIVE →' }}</button>
+        }
+        @if (myFiveError()) { <p class="error-copy" role="alert">Could not save MY FIVE. Please try again.</p> }
+      </div>
+    }
+  </section>
+
+  <section class="chapter now-playing-chapter" aria-labelledby="now-playing-title">
+    <header class="chapter-header"><p>ROLL / 02 — CURRENT SCREENING</p><h2 id="now-playing-title">NOW PLAYING</h2><span>CURRENTLY IN {{ user.username.toUpperCase() }}’S CINEMA.</span></header>
+    @if (watching().length) {
+      <div class="now-playing-stage" [class.has-many]="watching().length > 1">
+        @for (movie of watching(); track movie.tmdbId; let index = $index) {
+          <article class="feature-film" [style.--order]="index">
+            <button type="button" class="feature-poster" style="border:0;padding:0" (click)="openMovie(movie)" [attr.aria-label]="'Open ' + movie.title">@if (posterUrl(movie)) { <img [src]="posterUrl(movie)!" [alt]="'Poster for ' + movie.title" loading="lazy" /> } @else { <div class="no-poster">NO<br>POSTER</div> }</button>
+            <div class="feature-copy"><p>SCREEN {{ index + 1 < 10 ? '0' : '' }}{{ index + 1 }} / {{ releaseYear(movie) }}</p><h3>{{ movie.title }}</h3><button class="open-film-link" type="button" (click)="openMovie(movie)">OPEN FILM ↗</button></div>
+          </article>
+        }
+      </div>
+    } @else { <p class="chapter-empty"><strong>Nothing playing right now.</strong> Find something worth staying for.</p> }
+  </section>
+
+  <section class="chapter watchlist-chapter" aria-labelledby="watchlist-title">
+    <header class="chapter-header"><p>ROLL / 03 — THE NEXT REEL</p><h2 id="watchlist-title">WATCHLIST</h2><span>FILMS WAITING FOR THEIR TURN.</span></header>
+    @if (watchlist().length) {
+      <div class="watchlist-rail">
+        @for (movie of watchlist(); track movie.tmdbId; let index = $index) {
+          <article class="rail-film" [style.--order]="index"><span>REEL / 0{{ index + 1 }}</span><button type="button" class="rail-poster" style="border:0;padding:0" (click)="openMovie(movie)" [attr.aria-label]="'Open ' + movie.title">@if (posterUrl(movie)) { <img [src]="posterUrl(movie)!" [alt]="'Poster for ' + movie.title" loading="lazy" /> } @else { <div class="no-poster">NO<br>POSTER</div> }</button><div><p>{{ releaseYear(movie) }}</p><h3>{{ movie.title }}</h3><button class="open-film-link" type="button" (click)="openMovie(movie)">OPEN FILM ↗</button></div></article>
+        }
+      </div>
+    } @else { <p class="chapter-empty"><strong>Your watchlist is waiting.</strong> Save a film from Discover.</p> }
+  </section>
+
+  <section class="chapter archive-chapter" aria-labelledby="archive-title">
+    <header class="chapter-header"><p>ROLL / 04 — PERSONAL FILM ARCHIVE</p><h2 id="archive-title">THE ARCHIVE</h2><span>{{ watched().length }} FILMS / A CONTACT SHEET OF WHAT STAYED.</span></header>
+    @if (watched().length) {
+      <div class="archive-wall">
+        @for (movie of watched(); track movie.tmdbId; let index = $index) {
+          <article class="archive-film" [style.--order]="index"><span class="archive-frame">FRAME / {{ index + 1 < 10 ? '00' : index + 1 < 100 ? '0' : '' }}{{ index + 1 }}</span><button type="button" class="archive-poster" style="border:0;padding:0" (click)="openMovie(movie)" [attr.aria-label]="'Open ' + movie.title">@if (posterUrl(movie)) { <img [src]="posterUrl(movie)!" [alt]="'Poster for ' + movie.title" loading="lazy" /> } @else { <div class="no-poster">NO<br>POSTER</div> }</button><div class="archive-overlay"><p>{{ releaseYear(movie) }} / {{ movie.watchCount }} {{ movie.watchCount === 1 ? 'WATCH' : 'WATCHES' }} @if (movie.rating) { / {{ movie.rating }} OF 10 }</p><h3>{{ movie.title }}</h3><button class="open-film-link" type="button" (click)="openMovie(movie)">OPEN FILM ↗</button></div></article>
+        }
+      </div>
+    } @else { <p class="chapter-empty"><strong>Your archive is waiting.</strong> Finish a film to begin your cinema history.</p> }
+  </section>
+
+  <section class="chapter takes-chapter" aria-labelledby="takes-title">
+    <header class="chapter-header"><p>ROLL / 05 — IN YOUR OWN WORDS</p><h2 id="takes-title">YOUR TAKES</h2><span>THE THOUGHTS THAT OUTLIVED THE CREDITS.</span></header>
+    @if (takes()?.length) {
+      <div class="take-publication">@for (take of visibleTakes(); track take.tmdbId; let index = $index) { @if (movieFor(take.tmdbId); as movie) { <article class="take-entry"><button type="button" class="take-film-image" (click)="openMovie(movie)" [attr.aria-label]="'Open ' + movie.title">@if (posterUrl(movie)) { <img [src]="posterUrl(movie)!" [alt]="'Poster for ' + movie.title" loading="lazy" /> } @else { <span>NO<br>POSTER</span> }</button><div class="take-entry-copy"><span>TAKE / {{ index + 1 < 10 ? '00' : '0' }}{{ index + 1 }}</span><blockquote>“{{ take.body }}”</blockquote><div><p>{{ movie.title }}</p>@if (movie.rating) { <small>RATED / {{ movie.rating }} OF 10</small> }<button type="button" (click)="openMovie(movie)">READ FILM ↗</button></div></div></article> } }</div>
+      @if ((takes()?.length ?? 0) > 6) { <button class="all-takes-toggle" type="button" (click)="toggleAllTakes()">{{ showingAllTakes() ? 'SHOW LESS ↑' : 'VIEW ALL TAKES ↓' }}</button> }
+    } @else { <p class="chapter-empty"><strong>Your voice is waiting.</strong> Write a Take from any film in your cinema.</p> }
+  </section>
+
+  @if (takeMovie(); as movie) {
+    <div class="take-overlay" role="dialog" aria-modal="true" aria-labelledby="take-composer-title">
+      <button class="overlay-dismiss" type="button" (click)="closeTakeComposer()" aria-label="Close Take composer">×</button>
+      <form class="take-composer" (ngSubmit)="saveTake()">
+        <div class="composer-poster">@if (posterUrl(movie)) { <img [src]="posterUrl(movie)!" [alt]="'Poster for ' + movie.title" /> } @else { <div class="no-poster">NO<br>POSTER</div> }</div>
+        <div class="composer-copy"><p>TAKE / {{ takeFor(movie.tmdbId) ? 'EDIT' : 'NEW' }}</p><h2 id="take-composer-title">{{ movie.title }}</h2><span>{{ releaseYear(movie) }} / YOUR CINEMA</span><fieldset class="rating-control" [disabled]="ratingMovieId() === movie.tmdbId"><legend>YOUR RATING <b>{{ movie.rating ? movie.rating + ' / 10' : 'NOT RATED' }}</b></legend><div>@for (value of [1,2,3,4,5,6,7,8,9,10]; track value) { <button type="button" [class.is-rated]="movie.rating === value" (click)="rate(movie, value)" [attr.aria-label]="'Rate ' + movie.title + ' ' + value + ' out of 10'">{{ value }}</button> }</div></fieldset><label>YOUR TAKE<textarea [(ngModel)]="takeBody" name="takeBody" maxlength="1200" placeholder="What stayed with you?" required></textarea></label><div class="composer-footer"><small>RATE THE FILM, THEN LEAVE WHAT STAYED WITH YOU.</small><button class="primary-action" type="submit" [disabled]="isSavingTake()">{{ isSavingTake() ? 'PUBLISHING…' : takeFor(movie.tmdbId) ? 'SAVE CHANGES →' : 'PUBLISH TAKE →' }}</button></div></div>
+      </form>
+    </div>
+  }
+  @if (statusError()) { <p class="feedback error-copy" role="alert">{{ statusError() }}</p> }
+  @if (shareMessage()) { <p class="feedback" role="status">{{ shareMessage() }}</p> }
+  @if (loadError()) { <p class="feedback error-copy" role="alert">Your collection could not load. Refresh to try again.</p> }
+</main>

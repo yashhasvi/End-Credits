@@ -1,0 +1,76 @@
+@if (currentUser() || isPublicProfileRoute()) {
+  <router-outlet></router-outlet>
+} @else {
+<main class="admission-screen">
+  <div class="grain" aria-hidden="true"></div>
+  <div class="frame-lines" aria-hidden="true"></div>
+
+  <header class="brand-lockup">
+    <p class="frame-label">EC / PRIVATE CINEMA / 2026</p>
+    <h1 id="page-title">END CREDITS</h1>
+    <p>For the films that stayed.</p>
+  </header>
+
+  <section class="ticket-wrap" aria-label="End Credits admission">
+    <div class="admission-ticket">
+      <section class="ticket-access">
+        <div class="ticket-intro">
+          <p>{{ mode() === 'login' ? 'Your seat is waiting.' : 'Your first screening begins here.' }}</p>
+        </div>
+
+        <form (ngSubmit)="submit()">
+          @if (mode() === 'register') {
+            <label>
+              <span>DISPLAY NAME</span>
+              <input type="text" name="username" [(ngModel)]="username" minlength="3" maxlength="30" required autocomplete="username" placeholder="Your name on the marquee">
+            </label>
+          }
+
+          <label>
+            <span>EMAIL</span>
+            <input type="email" name="email" [(ngModel)]="email" required autocomplete="email" placeholder="you@example.com">
+          </label>
+
+          <label>
+            <span>PASSWORD</span>
+            <input type="password" name="password" [(ngModel)]="password" minlength="12" maxlength="128" required [autocomplete]="mode() === 'login' ? 'current-password' : 'new-password'" placeholder="12 characters or more">
+          </label>
+
+          <button class="ticket-action ticket-action-primary" type="submit" [disabled]="isSubmitting()">
+            {{ isSubmitting() ? 'ONE MOMENT…' : mode() === 'login' ? 'ENTER →' : 'CREATE ACCOUNT →' }}
+          </button>
+        </form>
+
+        <p class="mode-switch">
+          {{ mode() === 'login' ? 'New here?' : 'Already a member?' }}
+          <button type="button" (click)="selectMode(mode() === 'login' ? 'register' : 'login')">
+            {{ mode() === 'login' ? 'Create an account' : 'Sign in' }}
+          </button>
+        </p>
+
+        @if (feedback()) {
+          <p class="form-message success" role="status">{{ feedback() }}</p>
+        }
+        @if (errorMessage()) {
+          <p class="form-message error" role="alert">{{ errorMessage() }}</p>
+        }
+
+      </section>
+
+      <aside class="ticket-stub" aria-label="Admission ticket stub">
+        <span class="stub-perforation" aria-hidden="true"></span>
+        <span class="stub-edge" aria-hidden="true"></span>
+        <p class="stub-private-cinema">EC / PRIVATE CINEMA / 2026</p>
+        <div class="stub-brand">
+          <h2>END<br>CREDITS</h2>
+          <p>For the films that stayed.</p>
+        </div>
+        <div class="stub-data"><span>ADMIT ONE</span><i>/</i><span>SCREEN 01</span><i>/</i><span>35MM</span><i>/</i><span>SERIAL 0846</span></div>
+        <span class="barcode" aria-hidden="true"></span>
+      </aside>
+    </div>
+  </section>
+
+  <footer><span>FRAME 001</span><span>THE ADMISSION PASS</span><span>00:00:00:00</span></footer>
+</main>
+}

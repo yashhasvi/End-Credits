@@ -1,0 +1,55 @@
+# Dependencies and generated builds
+**/node_modules/
+**/.angular/
+**/dist/
+**/target/
+**/build/
+**/out/
+**/coverage/
+*.tsbuildinfo
+
+# Local environment and secret-bearing configuration
+.env
+.env.*
+.envrc
+*.env
+!.env.example
+.npmrc
+**/application-local.properties
+**/application-*.properties
+!**/application.properties
+**/application-*.yml
+**/application-*.yaml
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+secrets/
+credentials/
+
+# IDE and workspace state
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+.classpath
+.project
+.settings/
+# Local editor-extension instrumentation
+backend/end-credits-api/.github/modernize/
+
+# Logs and temporary files
+*.log
+logs/
+tmp/
+temp/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Operating-system files
+.DS_Store
+Thumbs.db
